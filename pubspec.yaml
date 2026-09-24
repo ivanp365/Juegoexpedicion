@@ -1,0 +1,31 @@
+name: personaje_app
+description: Pantallas de Splash y Selección de Personaje
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.5.1
+  flutter_animate: ^4.5.0
+  shared_preferences: ^2.5.5
+  confetti: ^0.8.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/avatares/
+    - assets/avatars/
+    - assets/images/lombricarrera/
+    - assets/images/
+    - assets/images/preguntas/
+    - assets/images/insignias/
+    - assets/images/tesoros/
