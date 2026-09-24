@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/logro.dart';
 
@@ -6,18 +6,26 @@ class LogrosStats {
   final int residuosAcertadosTotal;
   final int preguntasCorrectasTotal;
   final int monedasMaximas;
+  final int victoriasLombricarrera;
 
   const LogrosStats({
     this.residuosAcertadosTotal = 0,
     this.preguntasCorrectasTotal = 0,
     this.monedasMaximas = 0,
+    this.victoriasLombricarrera = 0,
   });
 
-  LogrosStats copyWith({int? residuosAcertadosTotal, int? preguntasCorrectasTotal, int? monedasMaximas}) {
+  LogrosStats copyWith({
+    int? residuosAcertadosTotal,
+    int? preguntasCorrectasTotal,
+    int? monedasMaximas,
+    int? victoriasLombricarrera,
+  }) {
     return LogrosStats(
       residuosAcertadosTotal: residuosAcertadosTotal ?? this.residuosAcertadosTotal,
       preguntasCorrectasTotal: preguntasCorrectasTotal ?? this.preguntasCorrectasTotal,
       monedasMaximas: monedasMaximas ?? this.monedasMaximas,
+      victoriasLombricarrera: victoriasLombricarrera ?? this.victoriasLombricarrera,
     );
   }
 
@@ -35,6 +43,9 @@ class LogrosStats {
           break;
         case TipoMetrica.monedas:
           valorActual = monedasMaximas;
+          break;
+        case TipoMetrica.victoriasLombricarrera:
+          valorActual = victoriasLombricarrera;
           break;
         case TipoMetrica.meta:
           valorActual = 0;
@@ -59,6 +70,7 @@ class LogrosNotifier extends StateNotifier<LogrosStats> {
   static const _kResiduos = 'logros_residuos_total';
   static const _kPreguntas = 'logros_preguntas_total';
   static const _kMonedasMax = 'logros_monedas_max';
+  static const _kVictoriasLombri = 'logros_victorias_lombri';
 
   Future<void> _cargar() async {
     final prefs = await SharedPreferences.getInstance();
@@ -66,6 +78,7 @@ class LogrosNotifier extends StateNotifier<LogrosStats> {
       residuosAcertadosTotal: prefs.getInt(_kResiduos) ?? 0,
       preguntasCorrectasTotal: prefs.getInt(_kPreguntas) ?? 0,
       monedasMaximas: prefs.getInt(_kMonedasMax) ?? 0,
+      victoriasLombricarrera: prefs.getInt(_kVictoriasLombri) ?? 0,
     );
   }
 
@@ -74,6 +87,7 @@ class LogrosNotifier extends StateNotifier<LogrosStats> {
     await prefs.setInt(_kResiduos, state.residuosAcertadosTotal);
     await prefs.setInt(_kPreguntas, state.preguntasCorrectasTotal);
     await prefs.setInt(_kMonedasMax, state.monedasMaximas);
+    await prefs.setInt(_kVictoriasLombri, state.victoriasLombricarrera);
   }
 
   void registrarResiduoAcertado() {
@@ -83,6 +97,11 @@ class LogrosNotifier extends StateNotifier<LogrosStats> {
 
   void registrarPreguntaCorrecta() {
     state = state.copyWith(preguntasCorrectasTotal: state.preguntasCorrectasTotal + 1);
+    _guardar();
+  }
+
+  void registrarVictoriaLombricarrera() {
+    state = state.copyWith(victoriasLombricarrera: state.victoriasLombricarrera + 1);
     _guardar();
   }
 
@@ -99,6 +118,7 @@ class LogrosNotifier extends StateNotifier<LogrosStats> {
     await prefs.remove(_kResiduos);
     await prefs.remove(_kPreguntas);
     await prefs.remove(_kMonedasMax);
+    await prefs.remove(_kVictoriasLombri);
   }
 }
 

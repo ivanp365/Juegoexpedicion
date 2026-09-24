@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/logro.dart';
@@ -86,6 +86,8 @@ class _LogrosScreenState extends ConsumerState<LogrosScreen> {
         return stats.preguntasCorrectasTotal;
       case TipoMetrica.monedas:
         return stats.monedasMaximas;
+      case TipoMetrica.victoriasLombricarrera:
+        return stats.victoriasLombricarrera;
       case TipoMetrica.meta:
         return 0;
     }
@@ -174,7 +176,7 @@ class _LogroCard extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               logro.tipo == TipoMetrica.meta
-                  ? 'Desbloquea los demás'
+                  ? 'Desbloquea los demÃ¡s'
                   : '$progresoActual / ${logro.meta}',
               style: const TextStyle(
                   fontSize: 9.5,
@@ -189,3 +191,4 @@ class _LogroCard extends StatelessWidget {
     );
   }
 }
+

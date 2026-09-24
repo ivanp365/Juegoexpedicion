@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/pregunta_lombricarrera.dart';
+import '../models/banco_lombricarrera.dart';
 import '../widgets/bottom_menu_bar.dart';
 import '../providers/game_provider.dart';
+import '../providers/logros_provider.dart';
 
 class LombricarreraJuegoScreen extends ConsumerStatefulWidget {
-  final String modo; 
+  final String modo;
   final int nivel;
 
   const LombricarreraJuegoScreen({super.key, required this.modo, required this.nivel});
@@ -19,30 +21,35 @@ class LombricarreraJuegoScreen extends ConsumerStatefulWidget {
 class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScreen> {
   int posJ1 = 0;
   int posJ2 = 0;
-  int turnoActual = 1; 
-  
+  int turnoActual = 1;
+
   bool mostrandoPregunta = false;
   bool tirandoDado = false;
   bool mostrandoFeedback = false;
   int? indexSeleccionado;
-  
+
   int valorDado = 1;
   late PreguntaLombri preguntaActual;
   int animDadoDisplay = 1;
   String animCatDisplay = 'assets/images/lombricarrera/lombricultura.png';
-  
+
   final Random _rnd = Random();
   final List<String> _categoriasAssets = ['lombricultura.png', 'cuidado.png', 'reciclaje.png', 'retolombripng.png'];
+
+  late List<PreguntaLombri> _preguntasPartida;
+  int _indicePregunta = 0;
 
   @override
   void initState() {
     super.initState();
+    _preguntasPartida = obtenerPreguntasAleatorias(widget.nivel, cantidad: 30);
     _prepararTurno();
   }
 
   void _prepararTurno() async {
     if (turnoActual == 2 && widget.modo == 'vsIA') {
       await Future.delayed(const Duration(seconds: 1));
+      if (!mounted) return;
       _iniciarTiroAnimado(esIA: true);
     }
   }
@@ -59,15 +66,17 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
       await Future.delayed(const Duration(milliseconds: 70));
       if (!mounted) return;
       setState(() {
-        animDadoDisplay = _rnd.nextInt(4) + 1; 
+        animDadoDisplay = _rnd.nextInt(4) + 1;
         animCatDisplay = 'assets/images/lombricarrera/${_categoriasAssets[_rnd.nextInt(4)]}';
       });
     }
 
-    valorDado = _rnd.nextInt(4) + 1; 
-    final banco = widget.nivel == 1 ? bancoLombricarreraNivel1 : bancoLombricarreraNivel2;
-    preguntaActual = banco[_rnd.nextInt(banco.length)];
-    
+    valorDado = _rnd.nextInt(4) + 1;
+
+    if (_indicePregunta >= _preguntasPartida.length) _indicePregunta = 0;
+    preguntaActual = _preguntasPartida[_indicePregunta];
+    _indicePregunta++;
+
     animDadoDisplay = valorDado;
     if (preguntaActual.color == 'verde') animCatDisplay = 'assets/images/lombricarrera/lombricultura.png';
     else if (preguntaActual.color == 'azul') animCatDisplay = 'assets/images/lombricarrera/cuidado.png';
@@ -82,7 +91,8 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
     });
 
     if (esIA) {
-      await Future.delayed(const Duration(seconds: 2)); 
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
       bool acierta = _rnd.nextDouble() <= 0.60;
       if (acierta) {
         _evaluarRespuesta(preguntaActual.indiceCorrecto);
@@ -99,10 +109,12 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
     setState(() { indexSeleccionado = index; mostrandoFeedback = true; });
 
     bool esCorrecto = index == preguntaActual.indiceCorrecto;
-    
-    // SISTEMA DE MONEDAS: +10 por acierto de jugador humano
-    if (esCorrecto && (turnoActual == 1 || (turnoActual == 2 && widget.modo != 'vsIA'))) {
+    final esJugadorHumano = turnoActual == 1 || (turnoActual == 2 && widget.modo != 'vsIA');
+
+    if (esCorrecto && esJugadorHumano) {
       ref.read(coinsProvider.notifier).state += 10;
+      ref.read(logrosProvider.notifier).registrarPreguntaCorrecta();
+      ref.read(logrosProvider.notifier).actualizarMonedasActuales(ref.read(coinsProvider));
     }
 
     await Future.delayed(const Duration(seconds: 2));
@@ -114,19 +126,20 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
         else posJ2 = (posJ2 + valorDado > 20) ? 20 : posJ2 + valorDado;
       });
       await Future.delayed(const Duration(milliseconds: 1000));
+      if (!mounted) return;
     }
 
-    // EVALUACIÓN DE VICTORIA Y BONOS
     if (posJ1 >= 20 || posJ2 >= 20) {
       String mensaje = '';
       if (posJ1 >= 20) {
         mensaje = '¡Jugador 1 Gana!\n+50 Hojas Doradas';
         ref.read(coinsProvider.notifier).state += 50;
+        ref.read(logrosProvider.notifier).registrarVictoriaLombricarrera();
+        ref.read(logrosProvider.notifier).actualizarMonedasActuales(ref.read(coinsProvider));
       } else if (widget.modo == 'vsIA') {
         mensaje = '¡La IA Gana!\nSigue intentándolo';
       } else {
-        mensaje = '¡Jugador 2 Gana!\n+50 Hojas Doradas';
-        ref.read(coinsProvider.notifier).state += 50;
+        mensaje = '¡Jugador 2 Gana!\nSigue intentándolo';
       }
       _mostrarVictoria(mensaje);
       return;
@@ -164,7 +177,6 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
           SafeArea(
             child: Column(
               children: [
-                // HEADER CON MARCADOR DE MONEDAS
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -208,7 +220,6 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
                     ),
                   ],
                 ),
-                
                 Expanded(
                   flex: 3,
                   child: _MarcadorJugador(
@@ -226,7 +237,6 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
                     turnoActivo: turnoActual == 2, posicion: posJ2,
                   ),
                 ),
-
                 if (!mostrandoPregunta)
                   Expanded(
                     flex: 6,
@@ -268,7 +278,6 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
                       ).animate().slideY(begin: 0.2, end: 0, curve: Curves.easeOutBack).fadeIn(),
                     ),
                   ),
-
                 const SizedBox(height: 5),
                 const BottomMenuBar(juegoActual: ContextoJuego.lombricarrera),
                 const SizedBox(height: 5),
@@ -284,9 +293,7 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
 class _LetreroDado extends StatelessWidget {
   final double alto;
   final Widget child;
-
   const _LetreroDado({required this.alto, required this.child});
-
   static const double _ratio = 2.57;
 
   @override
@@ -296,10 +303,7 @@ class _LetreroDado extends StatelessWidget {
       width: alto * _ratio,
       padding: EdgeInsets.symmetric(horizontal: alto * 0.28, vertical: alto * 0.14),
       decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/images/lombricarrera/tabladondevaeldadoycategoria.png'),
-          fit: BoxFit.contain,
-        ),
+        image: DecorationImage(image: AssetImage('assets/images/lombricarrera/tabladondevaeldadoycategoria.png'), fit: BoxFit.contain),
       ),
       child: FittedBox(fit: BoxFit.scaleDown, child: child),
     );
@@ -313,13 +317,7 @@ class _MarcadorJugador extends StatelessWidget {
   final int posicion;
   final bool esIA;
 
-  const _MarcadorJugador({
-    required this.imagenFondo,
-    required this.nombre,
-    required this.turnoActivo,
-    required this.posicion,
-    this.esIA = false,
-  });
+  const _MarcadorJugador({required this.imagenFondo, required this.nombre, required this.turnoActivo, required this.posicion, this.esIA = false});
 
   static const double _gridLeft = 0.064;
   static const double _gridRight = 0.067;
@@ -336,45 +334,32 @@ class _MarcadorJugador extends StatelessWidget {
       child: Opacity(
         opacity: turnoActivo ? 1.0 : 0.85,
         child: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(image: AssetImage(imagenFondo), fit: BoxFit.fill),
-          ),
+          decoration: BoxDecoration(image: DecorationImage(image: AssetImage(imagenFondo), fit: BoxFit.fill)),
           child: LayoutBuilder(
             builder: (context, constraints) {
               final double w = constraints.maxWidth;
               final double h = constraints.maxHeight;
-
               return Stack(
                 children: [
                   Positioned(
-                    left: w * 0.285,
-                    top: h * 0.15,
+                    left: w * 0.285, top: h * 0.15,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       decoration: BoxDecoration(
                         color: esIA ? const Color(0xFF1E6FD9) : const Color(0xFFD32F2F),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Text(
-                        nombre,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11.5, height: 1.1),
-                      ),
+                      child: Text(nombre, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11.5, height: 1.1)),
                     ),
                   ),
                   if (turnoActivo)
                     Positioned(
-                      left: w * 0.285,
-                      top: h * 0.272,
-                      child: const Text(
-                        '(turno actual)',
-                        style: TextStyle(color: Color(0xFF6B4423), fontSize: 10, fontWeight: FontWeight.w700, height: 1.0),
-                      ),
+                      left: w * 0.285, top: h * 0.272,
+                      child: const Text('(turno actual)', style: TextStyle(color: Color(0xFF6B4423), fontSize: 10, fontWeight: FontWeight.w700, height: 1.0)),
                     ),
                   Positioned(
-                    right: w * 0.073,
-                    top: h * 0.164,
-                    width: w * 0.171,
-                    height: h * 0.154,
+                    right: w * 0.073, top: h * 0.164,
+                    width: w * 0.171, height: h * 0.154,
                     child: Center(
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
@@ -383,10 +368,8 @@ class _MarcadorJugador extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    left: w * _gridLeft,
-                    right: w * _gridRight,
-                    top: h * _gridTop,
-                    bottom: h * _gridBottom,
+                    left: w * _gridLeft, right: w * _gridRight,
+                    top: h * _gridTop, bottom: h * _gridBottom,
                     child: Column(
                       children: [
                         Expanded(child: Row(children: fila1.map((num) => Expanded(child: _CasillaGrilla(numero: num, posicionActual: posicion))).toList())),
@@ -412,14 +395,12 @@ class _CasillaGrilla extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool esActual = numero == posicionActual;
-
     final Widget contenido = FittedBox(
       fit: BoxFit.scaleDown,
       child: numero == 20
           ? Icon(Icons.flag, color: esActual ? Colors.white : Colors.orange, size: 16)
           : Text('$numero', style: TextStyle(color: esActual ? Colors.white : const Color(0xFF6B4423), fontSize: 13, fontWeight: FontWeight.w900)),
     );
-
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 1.5, vertical: 1.5),
       alignment: Alignment.center,
@@ -431,9 +412,7 @@ class _CasillaGrilla extends StatelessWidget {
               boxShadow: [BoxShadow(color: Colors.greenAccent.withValues(alpha: 0.6), blurRadius: 6, spreadRadius: 1)],
             )
           : null,
-      child: esActual
-          ? contenido.animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(begin: 0.9, end: 1.1)
-          : contenido,
+      child: esActual ? contenido.animate(onPlay: (c) => c.repeat(reverse: true)).scaleXY(begin: 0.9, end: 1.1) : contenido,
     );
   }
 }
@@ -476,13 +455,7 @@ class _CajaPregunta extends StatelessWidget {
                       Expanded(
                         flex: 4,
                         child: Center(
-                          child: Text(
-                            pregunta.texto,
-                            textAlign: TextAlign.center,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF3E2712)),
-                          ),
+                          child: Text(pregunta.texto, textAlign: TextAlign.center, maxLines: 3, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF3E2712))),
                         ),
                       ),
                       Expanded(
@@ -550,9 +523,8 @@ class _BotonOpcion extends StatefulWidget {
   final String letra;
   final String texto;
   final VoidCallback? onTap;
-  final String estadoFeedback; 
+  final String estadoFeedback;
   final double alto;
-
   const _BotonOpcion(this.letra, this.texto, this.onTap, this.estadoFeedback, this.alto);
   @override State<_BotonOpcion> createState() => _BotonOpcionState();
 }
@@ -562,14 +534,8 @@ class _BotonOpcionState extends State<_BotonOpcion> {
   @override Widget build(BuildContext context) {
     Color? colorBorde;
     Color colorFondo = Colors.white;
-    
-    if (widget.estadoFeedback == 'correcto') {
-      colorBorde = Colors.green;
-      colorFondo = Colors.green.shade100;
-    } else if (widget.estadoFeedback == 'incorrecto') {
-      colorBorde = Colors.red;
-      colorFondo = Colors.red.shade100;
-    }
+    if (widget.estadoFeedback == 'correcto') { colorBorde = Colors.green; colorFondo = Colors.green.shade100; }
+    else if (widget.estadoFeedback == 'incorrecto') { colorBorde = Colors.red; colorFondo = Colors.red.shade100; }
 
     return GestureDetector(
       onTapDown: widget.onTap == null ? null : (_) => setState(() => _isPressed = true),
@@ -579,10 +545,10 @@ class _BotonOpcionState extends State<_BotonOpcion> {
       child: AnimatedScale(
         scale: _isPressed ? 0.92 : 1.0, duration: const Duration(milliseconds: 100),
         child: Container(
-          height: widget.alto, 
+          height: widget.alto,
           decoration: BoxDecoration(
             color: colorFondo,
-            borderRadius: BorderRadius.circular(25), 
+            borderRadius: BorderRadius.circular(25),
             border: Border.all(color: colorBorde ?? const Color(0xFF9C6A3A), width: 1.5),
           ),
           child: Row(
@@ -590,9 +556,7 @@ class _BotonOpcionState extends State<_BotonOpcion> {
               Container(
                 width: 28,
                 alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  border: Border(right: BorderSide(color: Color(0xFF9C6A3A), width: 1)),
-                ),
+                decoration: const BoxDecoration(border: Border(right: BorderSide(color: Color(0xFF9C6A3A), width: 1))),
                 child: Text(widget.letra.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Color(0xFF3E2712))),
               ),
               Expanded(
@@ -608,8 +572,3 @@ class _BotonOpcionState extends State<_BotonOpcion> {
     );
   }
 }
-
-/// Banco de preguntas del nivel 2
-final List<dynamic> bancoLombricarreraNivel2 = [
-  // TODO: añadir preguntas del nivel 2
-];

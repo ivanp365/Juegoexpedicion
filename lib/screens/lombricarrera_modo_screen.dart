@@ -20,13 +20,10 @@ class LombricarreraModoScreen extends ConsumerWidget {
                 const SizedBox(height: 10),
                 const _TopBar(),
                 const Spacer(flex: 1),
-                
-                Image.asset('assets/images/letreroseleccionamodo.png', height: 140, fit: BoxFit.contain)
+                Image.asset('assets/images/lombricarrera/letreroseleccionamodo.png', height: 140, fit: BoxFit.contain)
                     .animate().scaleXY(begin: 0.5, end: 1.0, duration: 600.ms, curve: Curves.easeOutBack)
                     .shimmer(delay: 2.seconds, duration: 1.seconds, color: Colors.white54),
-                
                 const Spacer(flex: 1),
-                
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Row(
@@ -34,31 +31,30 @@ class LombricarreraModoScreen extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: _ModeCard(
-                          image: 'assets/images/cardcontraotrojugador.png',
+                          image: 'assets/images/lombricarrera/cardcontraotrojugador.png',
                           delay: 100,
                           onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const LombricarreraNivelScreen(modo: '1vs1'))
-                            );
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => const LombricarreraNivelScreen(modo: 'vsJugador'),
+                            ));
                           },
                         ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: _ModeCard(
-                          image: 'assets/images/cardcontralaia.png',
+                          image: 'assets/images/lombricarrera/cardcontralaia.png',
                           delay: 250,
                           onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const LombricarreraNivelScreen(modo: 'vsIA'))
-                            );
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => const LombricarreraNivelScreen(modo: 'vsIA'),
+                            ));
                           },
                         ),
                       ),
                     ],
                   ),
                 ),
-                
                 const Spacer(flex: 3),
               ],
             ),
@@ -103,16 +99,13 @@ class _ModeCard extends StatefulWidget {
   final String image;
   final VoidCallback onTap;
   final int delay;
-
   const _ModeCard({required this.image, required this.onTap, this.delay = 0});
-
   @override
   State<_ModeCard> createState() => _ModeCardState();
 }
 
 class _ModeCardState extends State<_ModeCard> {
   bool _isPressed = false;
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(

@@ -16,7 +16,7 @@ class InstruccionesScreen extends StatelessWidget {
             'Arrastra cada residuo hacia el contenedor correcto: blanco (aprovechables), verde (orgánicos), rojo (peligrosos) o negro (no aprovechables).',
             'Si aciertas, ganas 50 hojas doradas y pasas al siguiente residuo.',
             'Si fallas, se activa una Pregunta Salvavidas: respóndela bien para salvarte y ganar 15 hojas doradas.',
-            'Si también fallas la pregunta, pierdes un corazÃ³n. ¡Cuidado, solo tienes 3!',
+            'Si también fallas la pregunta, pierdes un corazón. ¡Cuidado, solo tienes 3!',
             'Clasifica los 6 residuos de la ronda para completar el nivel.',
           ],
         };
