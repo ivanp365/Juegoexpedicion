@@ -126,7 +126,7 @@ class _EscogeAvatarScreenState extends ConsumerState<EscogeAvatarScreen>
         children: [
           // Fondo
           Image.asset(
-            'assets/images/Fondohome.png',
+            'assets/images/Fondohome.webp',
             fit: BoxFit.cover,
             errorBuilder: (c, e, s) => Container(color: const Color(0xFF3A5A2A)),
           ),
@@ -206,7 +206,7 @@ class _EscogeAvatarScreenState extends ConsumerState<EscogeAvatarScreen>
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
             child: Image.asset(
-              'assets/images/botonatras.png',
+              'assets/images/botonatras.webp',
               width: 54,
               height: 54,
               fit: BoxFit.contain,
@@ -684,7 +684,7 @@ class _EscogeAvatarScreenState extends ConsumerState<EscogeAvatarScreen>
 
     if (desbloqueado) {
       return _BtnAsset(
-        asset: 'assets/images/btn_jugar.png',
+        asset: 'assets/images/btn_jugar.webp',
         onTap: _jugar,
         width: 240,
         glow: _C.leaf,
@@ -722,7 +722,7 @@ class _EscogeAvatarScreenState extends ConsumerState<EscogeAvatarScreen>
             ),
           ),
         _BtnAsset(
-          asset: 'assets/images/btn_comprar.png',
+          asset: 'assets/images/btn_comprar.webp',
           onTap: puede ? () => _comprar(avatar) : null,
           width: 240,
           opacity: puede ? 1.0 : 0.5,

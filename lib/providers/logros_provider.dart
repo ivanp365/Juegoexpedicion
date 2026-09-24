@@ -1,4 +1,4 @@
-﻿import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/logro.dart';
 
@@ -110,6 +110,17 @@ class LogrosNotifier extends StateNotifier<LogrosStats> {
       state = state.copyWith(monedasMaximas: monedasActuales);
       _guardar();
     }
+  }
+
+  /// Easter egg: desbloquea todos los logros de golpe.
+  Future<void> desbloquearTodo() async {
+    state = const LogrosStats(
+      residuosAcertadosTotal: 999,
+      preguntasCorrectasTotal: 999,
+      monedasMaximas: 999999,
+      victoriasLombricarrera: 999,
+    );
+    await _guardar();
   }
 
   Future<void> resetear() async {

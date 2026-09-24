@@ -89,7 +89,7 @@ class BottomMenuBar extends ConsumerWidget {
                             children: [
                               Flexible(
                                 child: _MenuButton(
-                                  image: 'assets/images/icono_instrucciones.png',
+                                  image: 'assets/images/icono_instrucciones.webp',
                                   label: 'INSTRUCCIONES',
                                   onTap: () => Navigator.of(context).push(
                                     MaterialPageRoute(
@@ -100,7 +100,7 @@ class BottomMenuBar extends ConsumerWidget {
                               ),
                               Flexible(
                                 child: _MenuButton(
-                                  image: 'assets/images/icono_logros.png',
+                                  image: 'assets/images/icono_logros.webp',
                                   label: 'LOGROS',
                                   onTap: () => Navigator.of(context).push(
                                     MaterialPageRoute(builder: (_) => const LogrosScreen()),
@@ -117,7 +117,7 @@ class BottomMenuBar extends ConsumerWidget {
                             children: [
                               Flexible(
                                 child: _MenuButton(
-                                  image: 'assets/images/icono_coleccion.png',
+                                  image: 'assets/images/icono_coleccion.webp',
                                   label: 'COLECCI\u00D3N',
                                   onTap: () => Navigator.of(context).push(
                                     MaterialPageRoute(builder: (_) => const ColeccionScreen()),
@@ -126,7 +126,7 @@ class BottomMenuBar extends ConsumerWidget {
                               ),
                               Flexible(
                                 child: _MenuButton(
-                                  image: 'assets/images/icono_ajustes.png',
+                                  image: 'assets/images/icono_ajustes.webp',
                                   label: 'AJUSTES',
                                   onTap: () => Navigator.of(context).push(
                                     MaterialPageRoute(builder: (_) => const AjustesScreen()),

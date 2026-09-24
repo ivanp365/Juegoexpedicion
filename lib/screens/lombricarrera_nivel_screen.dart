@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/game_provider.dart';
@@ -15,7 +15,7 @@ class LombricarreraNivelScreen extends ConsumerWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset('assets/images/fondo_clasificacion.png', fit: BoxFit.cover),
+          Image.asset('assets/images/fondo_clasificacion.webp', fit: BoxFit.cover),
           SafeArea(
             child: Column(
               children: [
@@ -23,15 +23,15 @@ class LombricarreraNivelScreen extends ConsumerWidget {
                 const _TopBar(),
                 const Spacer(flex: 1),
                 
-                Image.asset('assets/images/letreroseleccionatunivel.png', height: 110, fit: BoxFit.contain)
+                Image.asset('assets/images/letreroseleccionatunivel.webp', height: 110, fit: BoxFit.contain)
                     .animate().scaleXY(begin: 0.5, end: 1.0, duration: 600.ms, curve: Curves.easeOutBack)
                     .shimmer(delay: 2.seconds),
                 
                 const Spacer(flex: 1),
                 
-                _LevelCard(level: 1, image: 'assets/images/cardnivel1clasificacion.png', cost: 0, modo: modo),
+                _LevelCard(level: 1, image: 'assets/images/cardnivel1clasificacion.webp', cost: 0, modo: modo),
                 const SizedBox(height: 25),
-                _LevelCard(level: 2, image: 'assets/images/cardnivel2clasificacion.png', cost: 500, modo: modo),
+                _LevelCard(level: 2, image: 'assets/images/cardnivel2clasificacion.webp', cost: 500, modo: modo),
                 
                 const Spacer(flex: 3),
               ],
@@ -55,13 +55,13 @@ class _TopBar extends ConsumerWidget {
         children: [
           GestureDetector(
             onTap: () => Navigator.of(context).maybePop(),
-            child: Image.asset('assets/images/botonatras.png', width: 65, height: 65)
+            child: Image.asset('assets/images/botonatras.webp', width: 65, height: 65)
                 .animate().scaleXY(begin: 0.8, end: 1.0, duration: 400.ms),
           ),
           Container(
             height: 48, width: 140,
             decoration: const BoxDecoration(
-              image: DecorationImage(image: AssetImage('assets/images/coin_bg.png'), fit: BoxFit.contain)
+              image: DecorationImage(image: AssetImage('assets/images/coin_bg.webp'), fit: BoxFit.contain)
             ),
             alignment: Alignment.centerRight,
             padding: const EdgeInsets.only(right: 35),
@@ -136,7 +136,7 @@ class _LevelCardState extends ConsumerState<_LevelCard> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset('assets/images/candado.png', width: 50)
+                        Image.asset('assets/images/candado.webp', width: 50)
                             .animate(onPlay: (c) => c.repeat(reverse: true))
                             .scaleXY(end: 1.1),
                         const SizedBox(height: 8),

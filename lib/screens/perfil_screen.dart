@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/logro.dart';
 import '../providers/game_provider.dart';
 import '../providers/logros_provider.dart';
 import '../widgets/pantalla_header.dart';
@@ -19,7 +20,7 @@ class PerfilScreen extends ConsumerWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset('assets/images/Fondohome.png', fit: BoxFit.cover),
+          Image.asset('assets/images/Fondohome.webp', fit: BoxFit.cover),
           SafeArea(
             child: Column(
               children: [
@@ -33,7 +34,7 @@ class PerfilScreen extends ConsumerWidget {
                           width: 96, height: 96,
                           decoration: BoxDecoration(shape: BoxShape.circle, color: const Color(0xFF6FCB4B), border: Border.all(color: Colors.white, width: 4), boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))]),
                           padding: const EdgeInsets.all(8),
-                          child: Container(decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF29ABE2)), child: Image.asset('assets/images/icono_perfil.png', fit: BoxFit.contain)),
+                          child: Container(decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF29ABE2)), child: Image.asset('assets/images/icono_perfil.webp', fit: BoxFit.contain)),
                         ),
                         const SizedBox(height: 10),
                         Text(
@@ -57,7 +58,9 @@ class PerfilScreen extends ConsumerWidget {
                               const Divider(height: 20, color: Color(0xFFDBC1A0)),
                               _StatFila(icon: Icons.psychology_rounded, color: const Color(0xFF9C27B0), label: 'Preguntas acertadas', valor: '${stats.preguntasCorrectasTotal}'),
                               const Divider(height: 20, color: Color(0xFFDBC1A0)),
-                              _StatFila(icon: Icons.emoji_events_rounded, color: const Color(0xFFFFB300), label: 'Logros desbloqueados', valor: '$desbloqueados / 9'),
+                              _StatFila(icon: Icons.emoji_events, color: const Color(0xFF8BC34A), label: 'Victorias LombriCarrera', valor: '${stats.victoriasLombricarrera}'),
+                              const Divider(height: 20, color: Color(0xFFDBC1A0)),
+                              _StatFila(icon: Icons.emoji_events_rounded, color: const Color(0xFFFFB300), label: 'Logros desbloqueados', valor: '$desbloqueados / ${listaDeLogros.length}'),
                             ],
                           ),
                         ),
@@ -101,3 +104,4 @@ class _StatFila extends StatelessWidget {
     );
   }
 }
+

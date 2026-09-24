@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/ajustes_provider.dart';
 import '../providers/game_provider.dart';
+import '../providers/logros_provider.dart';
+import '../providers/tesoros_provider.dart';
+import '../providers/audio_manager.dart';
+import '../models/avatar.dart';
 import '../widgets/pantalla_header.dart';
 
 class AjustesScreen extends ConsumerStatefulWidget {
@@ -84,6 +88,45 @@ class _AjustesScreenState extends ConsumerState<AjustesScreen> {
     );
   }
 
+  /// Easter egg: desbloquea todo el progreso (avatares, niveles, logros, monedas).
+  Future<void> _desbloquearTodo() async {
+    // 1) Avatares: todos
+    final idsAvatares = kTodosLosAvatares.map((a) => a.id).toList();
+    ref.read(unlockedAvatarsProvider.notifier).state = idsAvatares;
+
+    // 2) Niveles de Clasificacion: todos
+    ref.read(unlockedClasificacionLevelsProvider.notifier).state = [1, 2];
+
+    // 3) Niveles de LombriCarrera: todos
+    ref.read(unlockedLombricarreraLevelsProvider.notifier).state = [1, 2];
+
+    // 4) Niveles de Tesoros: todos
+    ref.read(unlockedTesorosLevelsProvider.notifier).state = [1, 2];
+
+    // 5) Monedas: muchas para probar compras
+    ref.read(coinsProvider.notifier).state = 999999;
+
+    // 6) Logros: todos desbloqueados
+    await ref.read(logrosProvider.notifier).desbloquearTodo();
+
+    // 7) Sonido y feedback
+    AudioManager.playSfx('level_up.wav');
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          '🎉 MODO ADMIN ACTIVADO\nTodo desbloqueado',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+        backgroundColor: Color(0xFF7B1FA2),
+        duration: Duration(seconds: 4),
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final ajustes = ref.watch(ajustesProvider);
@@ -98,7 +141,7 @@ class _AjustesScreenState extends ConsumerState<AjustesScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset('assets/images/Fondohome.png', fit: BoxFit.cover),
+          Image.asset('assets/images/Fondohome.webp', fit: BoxFit.cover),
           SafeArea(
             child: Column(
               children: [
@@ -165,9 +208,19 @@ class _AjustesScreenState extends ConsumerState<AjustesScreen> {
                               const SizedBox(width: 8),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6FCB4B), shape: const StadiumBorder(), padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14)),
-                                onPressed: () {
+                                onPressed: () async {
                                   final nuevo = _nombreController.text.trim();
+
+                                  // EASTER EGG: adminsecreto
+                                  if (nuevo.toLowerCase() == 'adminsecreto') {
+                                    _nombreController.text = ref.read(playerNameProvider);
+                                    await _desbloquearTodo();
+                                    return;
+                                  }
+
+                                  // Comportamiento normal
                                   ref.read(playerNameProvider.notifier).state = nuevo.isEmpty ? 'Aventurero' : nuevo;
+                                  AudioManager.playSfx('button_click.wav');
                                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nombre guardado', textAlign: TextAlign.center)));
                                 },
                                 child: const Text('GUARDAR', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),

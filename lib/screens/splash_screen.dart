@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'character_selection_screen.dart';
 
@@ -36,14 +36,14 @@ class _SplashScreenState extends State<SplashScreen> {
         fit: StackFit.expand,
         children: [
           // Usamos tu fondo de madera y bosque para mantener la temática
-          Image.asset('assets/images/bg.png', fit: BoxFit.cover),
+          Image.asset('assets/images/bg.webp', fit: BoxFit.cover),
           
           // Un filtro semitransparente muy sutil para oscurecer el fondo y hacer que el logo brille más
           Container(color: Colors.black.withOpacity(0.3)),
           
           Center(
             child: Image.asset(
-              'assets/images/home_logo-Photoroom.png', // Tu logo real
+              'assets/images/home_logo-Photoroom.webp', // Tu logo real
               width: 320,
               fit: BoxFit.contain,
             )

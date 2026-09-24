@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/game_provider.dart';
@@ -13,14 +13,14 @@ class LombricarreraModoScreen extends ConsumerWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset('assets/images/fondo_clasificacion.png', fit: BoxFit.cover),
+          Image.asset('assets/images/fondo_clasificacion.webp', fit: BoxFit.cover),
           SafeArea(
             child: Column(
               children: [
                 const SizedBox(height: 10),
                 const _TopBar(),
                 const Spacer(flex: 1),
-                Image.asset('assets/images/lombricarrera/letreroseleccionamodo.png', height: 140, fit: BoxFit.contain)
+                Image.asset('assets/images/lombricarrera/letreroseleccionamodo.webp', height: 140, fit: BoxFit.contain)
                     .animate().scaleXY(begin: 0.5, end: 1.0, duration: 600.ms, curve: Curves.easeOutBack)
                     .shimmer(delay: 2.seconds, duration: 1.seconds, color: Colors.white54),
                 const Spacer(flex: 1),
@@ -31,7 +31,7 @@ class LombricarreraModoScreen extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: _ModeCard(
-                          image: 'assets/images/lombricarrera/cardcontraotrojugador.png',
+                          image: 'assets/images/lombricarrera/cardcontraotrojugador.webp',
                           delay: 100,
                           onTap: () {
                             Navigator.of(context).push(MaterialPageRoute(
@@ -43,7 +43,7 @@ class LombricarreraModoScreen extends ConsumerWidget {
                       const SizedBox(width: 16),
                       Expanded(
                         child: _ModeCard(
-                          image: 'assets/images/lombricarrera/cardcontralaia.png',
+                          image: 'assets/images/lombricarrera/cardcontralaia.webp',
                           delay: 250,
                           onTap: () {
                             Navigator.of(context).push(MaterialPageRoute(
@@ -77,13 +77,13 @@ class _TopBar extends ConsumerWidget {
         children: [
           GestureDetector(
             onTap: () => Navigator.of(context).maybePop(),
-            child: Image.asset('assets/images/botonatras.png', width: 65, height: 65)
+            child: Image.asset('assets/images/botonatras.webp', width: 65, height: 65)
                 .animate().scaleXY(begin: 0.8, end: 1.0, duration: 400.ms),
           ),
           Container(
             height: 48, width: 140,
             decoration: const BoxDecoration(
-              image: DecorationImage(image: AssetImage('assets/images/coin_bg.png'), fit: BoxFit.contain)
+              image: DecorationImage(image: AssetImage('assets/images/coin_bg.webp'), fit: BoxFit.contain)
             ),
             alignment: Alignment.centerRight,
             padding: const EdgeInsets.only(right: 35),
