@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:math' as math;
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/game_provider.dart';
@@ -18,38 +19,58 @@ class _TesorosExploracionScreenState
   static const double _designWidth = 1000;
   static const double _designHeight = 1575;
 
-  // Único elemento correcto: el cofre representa el tesoro de la misión.
   static const String _elementoCorrecto = 'cofre';
-  // Señuelos: se pueden tocar, dan una pequeña pista de "no es aquí",
-  // pero no rompen el juego ni cuentan como error grave.
   static const List<String> _decoys = ['arbol', 'gota', 'hoja', 'huella'];
 
-  // Coordenadas (0.0–1.0) calibradas sobre fondo_busqueda.png.
-  // Distribuidas de forma ordenada: 2 arriba, 3 abajo, cada una
-  // sobre un elemento del paisaje (árbol, río, camino, puente, etc.).
-  final Map<String, Offset> _posiciones = const {
-    'arbol': Offset(0.13, 0.42), // Tronco del árbol grande (izquierda)
-    'hoja': Offset(0.82, 0.42), // Vegetación del lado derecho
-    'gota': Offset(0.55, 0.72), // Sobre el río, parte media-baja
-    'huella': Offset(0.78, 0.82), // Camino/puente, lado derecho
-    'cofre': Offset(0.32, 0.82), // Camino bajo, cerca del niño
-  };
+  // NUEVAS COORDENADAS: Distribución perfecta por todo el paisaje
+  final List<Offset> _coordenadasFijas = const [
+    Offset(0.25, 0.28), // Arriba a la izquierda (cerca del follaje del árbol)
+    Offset(0.75, 0.30), // Arriba a la derecha (cerca de la iglesia y montañas)
+    Offset(0.18, 0.50), // Centro izquierda (sobre las casas, arriba del niño)
+    Offset(0.85, 0.55), // Centro derecha (sobre los cultivos de maíz)
+    Offset(0.55, 0.63), // Centro abajo (justo sobre el puente de madera)
+  ];
 
-  final Set<String> _decoysTocados = {};
+  late Map<String, Offset> _posicionesAleatorias;
+  final Set<String> _elementosRevelados = {}; 
+
   bool _encontrado = false;
   String? _mensajeFeedback;
 
+  @override
+  void initState() {
+    super.initState();
+    _generarDistribucionAleatoria();
+  }
+
+  void _generarDistribucionAleatoria() {
+    final todosLosElementos = [..._decoys, _elementoCorrecto];
+    todosLosElementos.shuffle(math.Random()); 
+
+    _posicionesAleatorias = {};
+    for (int i = 0; i < todosLosElementos.length; i++) {
+      _posicionesAleatorias[todosLosElementos[i]] = _coordenadasFijas[i];
+    }
+  }
+
   void _tocarElemento(String tipo) {
-    if (_encontrado) return;
+    if (_encontrado || _elementosRevelados.contains(tipo)) return;
+
+    setState(() {
+      _elementosRevelados.add(tipo); 
+    });
 
     if (tipo == _elementoCorrecto) {
-      setState(() => _encontrado = true);
-      _mostrarDialogoExito();
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (mounted) {
+          setState(() => _encontrado = true);
+          _mostrarDialogoExito();
+        }
+      });
       return;
     }
 
     setState(() {
-      _decoysTocados.add(tipo);
       _mensajeFeedback = 'Aquí no hay nada… ¡sigue buscando!';
     });
     Future.delayed(const Duration(seconds: 2), () {
@@ -60,10 +81,6 @@ class _TesorosExploracionScreenState
   void _mostrarDialogoExito() {
     final veredaActual = ref.read(veredaSeleccionadaProvider);
     final mision = ref.read(misionActualProvider);
-
-    // OJO: aquí NO sumamos monedas ni marcamos el tesoro como descubierto.
-    // Eso lo hace TesorosCategoriaScreen._elegir() cuando el jugador acierta
-    // la categoría — hacerlo también aquí duplicaba la recompensa.
 
     showDialog(
       context: context,
@@ -106,10 +123,7 @@ class _TesorosExploracionScreenState
                     const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
               ),
               onPressed: () {
-                Navigator.of(ctx).pop(); // Cierra diálogo
-                // Reemplaza esta pantalla por la de categoría: si el jugador
-                // acierta ahí, avanza; si falla, puede reintentar sin volver
-                // a buscar el tesoro otra vez.
+                Navigator.of(ctx).pop();
                 Navigator.of(context).pushReplacement(
                   MaterialPageRoute(
                       builder: (_) => const TesorosCategoriaScreen()),
@@ -127,54 +141,37 @@ class _TesorosExploracionScreenState
     );
   }
 
-  Widget _pin(String tipo, Offset pos, BoxConstraints constraints) {
+  Widget _pinMisterioso(String tipo, Offset pos, BoxConstraints constraints) {
+    final revelado = _elementosRevelados.contains(tipo);
     final esCorrecto = tipo == _elementoCorrecto;
-    final tocado = _decoysTocados.contains(tipo);
 
     return Positioned(
       left: constraints.maxWidth * pos.dx - 35,
       top: constraints.maxHeight * pos.dy - 35,
       child: GestureDetector(
         onTap: () => _tocarElemento(tipo),
-        child: Container(
-          width: 70,
-          height: 70,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.amber, width: 3),
-            color: Colors.black.withValues(alpha: 0.3),
-            boxShadow: const [
-              BoxShadow(
-                  color: Colors.black45, blurRadius: 6, offset: Offset(0, 2))
-            ],
-          ),
-          child: Center(
-            child: Image.asset(
-              'assets/images/icono_$tipo.png',
-              width: 45,
-              height: 45,
-              errorBuilder: (c, e, s) =>
-                  const Icon(Icons.star, color: Colors.amber, size: 30),
-            ),
-          ),
+        child: TweenAnimationBuilder(
+          tween: Tween<double>(begin: 0, end: revelado ? math.pi : 0),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeOutBack,
+          builder: (context, double val, child) {
+            bool mostrandoFrente = val < (math.pi / 2);
+            return Transform(
+              alignment: Alignment.center,
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.001) 
+                ..rotateY(val),
+              child: mostrandoFrente
+                  ? const _CaraMisteriosa()
+                  : Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.identity()..rotateY(math.pi),
+                      child: _CaraRevelada(tipo: tipo, esCorrecto: esCorrecto),
+                    ),
+            );
+          },
         ),
-      )
-          // Brillo/pulso constante para que se note que son interactivos,
-          // sin delatar cuál es el correcto (todos laten igual).
-          .animate(onPlay: (c) => c.repeat(reverse: true))
-          .scaleXY(
-              begin: 1.0,
-              end: esCorrecto ? 1.12 : 1.08,
-              duration: 900.ms,
-              curve: Curves.easeInOut)
-          // Si un señuelo ya fue tocado, se atenúa para dar feedback visual
-          // de "ya probé aquí" sin desaparecerlo del todo.
-          .then()
-          .custom(
-            duration: 1.ms,
-            builder: (context, value, child) =>
-                Opacity(opacity: tocado ? 0.45 : 1.0, child: child),
-          ),
+      ),
     );
   }
 
@@ -191,7 +188,6 @@ class _TesorosExploracionScreenState
         bottom: false,
         child: Stack(
           children: [
-            // 1. ESCENARIO FIJO Y ELÁSTICO
             Positioned.fill(
               child: Center(
                 child: AspectRatio(
@@ -206,15 +202,13 @@ class _TesorosExploracionScreenState
                                 fit: BoxFit.fill),
                           ),
 
-                          // 2. PINES: 4 señuelos + 1 correcto (el cofre)
                           if (!_encontrado)
-                            for (final tipo in [..._decoys, _elementoCorrecto])
-                              _pin(tipo, _posiciones[tipo]!, constraints),
+                            for (final tipo in _posicionesAleatorias.keys)
+                              _pinMisterioso(tipo, _posicionesAleatorias[tipo]!, constraints),
 
-                          // 3. FEEDBACK "aquí no hay nada" flotante
                           if (_mensajeFeedback != null)
                             Positioned(
-                              top: constraints.maxHeight * 0.08,
+                              top: constraints.maxHeight * 0.16,
                               left: constraints.maxWidth * 0.15,
                               right: constraints.maxWidth * 0.15,
                               child: Container(
@@ -241,7 +235,6 @@ class _TesorosExploracionScreenState
                                   .fadeOut(duration: 400.ms),
                             ),
 
-                          // 4. PISTA DE LA MISIÓN — banner estilo madera, siempre visible
                           if (mision != null)
                             Positioned(
                               bottom: 20,
@@ -289,7 +282,6 @@ class _TesorosExploracionScreenState
               ),
             ),
 
-            // 5. BARRA SUPERIOR
             Positioned(
               top: MediaQuery.of(context).padding.top + 10,
               left: 16,
@@ -319,8 +311,6 @@ class _TesorosExploracionScreenState
                               blurRadius: 4)
                         ],
                       ),
-                      // FittedBox: si el nombre de la vereda es largo, el
-                      // letrero se achica para caber en vez de desbordarse.
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
@@ -362,6 +352,68 @@ class _TesorosExploracionScreenState
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CaraMisteriosa extends StatelessWidget {
+  const _CaraMisteriosa();
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 70,
+      height: 70,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: const Color(0xFFFFE08A), width: 3),
+        color: const Color(0xFF5C3A1E),
+        boxShadow: const [
+          BoxShadow(color: Colors.black45, blurRadius: 6, offset: Offset(0, 3))
+        ],
+      ),
+      child: const Center(
+        child: Text('?', 
+          style: TextStyle(
+            color: Color(0xFFFFE08A), 
+            fontSize: 40, 
+            fontWeight: FontWeight.w900,
+            shadows: [Shadow(color: Colors.black, offset: Offset(2, 2))]
+          )
+        ),
+      ),
+    )
+    .animate(onPlay: (c) => c.repeat(reverse: true))
+    .scaleXY(begin: 1.0, end: 1.08, duration: 1.seconds, curve: Curves.easeInOut);
+  }
+}
+
+class _CaraRevelada extends StatelessWidget {
+  final String tipo;
+  final bool esCorrecto;
+
+  const _CaraRevelada({required this.tipo, required this.esCorrecto});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 70,
+      height: 70,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: esCorrecto ? Colors.greenAccent : Colors.amber, 
+          width: esCorrecto ? 4 : 3
+        ),
+        color: Colors.black.withValues(alpha: 0.6),
+      ),
+      child: Center(
+        child: Image.asset(
+          'assets/images/icono_$tipo.png',
+          width: 45,
+          height: 45,
+          errorBuilder: (c, e, s) => const Icon(Icons.star, color: Colors.amber, size: 30),
         ),
       ),
     );
