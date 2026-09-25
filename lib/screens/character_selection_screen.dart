@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/avatar.dart';
 import '../providers/game_provider.dart';
 import '../providers/audio_manager.dart';
+import '../widgets/bgm_scope.dart';
 import 'home_screen.dart';
 
 class CharacterSelectionScreen extends ConsumerStatefulWidget {
@@ -18,16 +19,8 @@ class CharacterSelectionScreen extends ConsumerStatefulWidget {
 class _CharacterSelectionScreenState
     extends ConsumerState<CharacterSelectionScreen> {
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      AudioManager.playBgm('menu_secondary_theme.mp3');
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BgmScope(mode: BgmMode.menu, child: Scaffold(
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -53,7 +46,7 @@ class _CharacterSelectionScreenState
           ),
         ],
       ),
-    );
+    ));
   }
 }
 
@@ -332,7 +325,7 @@ class _PlayButton extends ConsumerWidget {
           Navigator.of(context).pop();
           return;
         }
-        AudioManager.playBgm('home_theme.mp3');
+        AudioManager.setMode(BgmMode.home);
         Navigator.of(context).push(
           PageRouteBuilder(
             transitionDuration: const Duration(milliseconds: 750),

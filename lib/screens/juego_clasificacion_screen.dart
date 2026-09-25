@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +8,7 @@ import '../providers/logros_provider.dart';
 import '../providers/audio_manager.dart';
 import '../models/pregunta_salvavidas.dart';
 import '../widgets/bottom_menu_bar.dart';
+import '../widgets/bgm_scope.dart';
 
 class Residuo {
   final String nombre;
@@ -85,9 +86,6 @@ class _JuegoClasificacionScreenState extends ConsumerState<JuegoClasificacionScr
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      AudioManager.playBgm('home_theme.mp3');
-    });
     final random = Random();
     rondaActual = List.from(_bancoResiduos)..shuffle(random);
     rondaActual = rondaActual.take(6).toList();
@@ -393,7 +391,7 @@ class _JuegoClasificacionScreenState extends ConsumerState<JuegoClasificacionScr
     final residuoActual = rondaActual[residuoActualIndex];
     final String corazonesAsset = vidas >= 3 ? 'assets/images/3corazones.webp' : vidas == 2 ? 'assets/images/2corazones.webp' : 'assets/images/1corazones.webp';
 
-    return Scaffold(
+    return BgmScope(mode: BgmMode.home, child: Scaffold(
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -491,7 +489,7 @@ class _JuegoClasificacionScreenState extends ConsumerState<JuegoClasificacionScr
             ),
         ],
       ),
-    );
+    ));
   }
 }
 

@@ -1,10 +1,11 @@
-import 'dart:math';
+﻿import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/pregunta_lombricarrera.dart';
 import '../models/banco_lombricarrera.dart';
 import '../widgets/bottom_menu_bar.dart';
+import '../widgets/bgm_scope.dart';
 import '../providers/game_provider.dart';
 import '../providers/logros_provider.dart';
 import '../providers/audio_manager.dart';
@@ -43,9 +44,6 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      AudioManager.playBgm('home_theme.mp3');
-    });
     _preguntasPartida = obtenerPreguntasAleatorias(widget.nivel, cantidad: 30);
     _prepararTurno();
   }
@@ -177,7 +175,7 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BgmScope(mode: BgmMode.home, child: Scaffold(
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -297,7 +295,7 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
           ),
         ],
       ),
-    );
+    ));
   }
 }
 

@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/tesoro_model.dart';
 import '../../providers/game_provider.dart';
 import '../../providers/tesoros_provider.dart';
 import '../../providers/audio_manager.dart';
+import '../../widgets/bgm_scope.dart';
 import '../../widgets/bottom_menu_bar.dart';
 import '../../widgets/tesoros_theme.dart';
 import 'tesoros_coleccion_screen.dart';
@@ -75,14 +76,6 @@ class TesorosMapaScreen extends ConsumerStatefulWidget {
 
 class _TesorosMapaScreenState extends ConsumerState<TesorosMapaScreen> {
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      AudioManager.playBgm('home_theme.mp3');
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     final descubiertos = ref.watch(tesorosDescubiertosProvider);
     final nivel = ref.watch(nivelJuegoProvider);
@@ -100,7 +93,7 @@ class _TesorosMapaScreenState extends ConsumerState<TesorosMapaScreen> {
     final totalDescubiertos =
         misionesDeNivel(nivel).where((m) => descubiertos.contains(m.id)).length;
 
-    return Scaffold(
+    return BgmScope(mode: BgmMode.home, child: Scaffold(
       backgroundColor: TC.woodDeep,
       body: Stack(
         fit: StackFit.expand,
@@ -186,7 +179,7 @@ class _TesorosMapaScreenState extends ConsumerState<TesorosMapaScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 

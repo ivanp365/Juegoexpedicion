@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../models/tesoro_model.dart';
 import '../../providers/game_provider.dart';
 import '../../providers/tesoros_provider.dart';
 import '../../providers/audio_manager.dart';
+import '../../widgets/bgm_scope.dart';
 import 'tesoros_intro_screen.dart';
 
 class TesorosNivelScreen extends ConsumerStatefulWidget {
@@ -16,16 +17,8 @@ class TesorosNivelScreen extends ConsumerStatefulWidget {
 
 class _TesorosNivelScreenState extends ConsumerState<TesorosNivelScreen> {
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      AudioManager.playBgm('home_theme.mp3');
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return BgmScope(mode: BgmMode.home, child: Scaffold(
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -53,7 +46,7 @@ class _TesorosNivelScreenState extends ConsumerState<TesorosNivelScreen> {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 

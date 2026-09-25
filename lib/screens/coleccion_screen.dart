@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/logro.dart';
 import '../providers/logros_provider.dart';
 import '../widgets/pantalla_header.dart';
-import '../providers/audio_manager.dart';
 import '../widgets/bgm_scope.dart';
+import '../providers/audio_manager.dart';
 
 class ColeccionScreen extends ConsumerStatefulWidget {
   const ColeccionScreen({super.key});
@@ -15,14 +15,6 @@ class ColeccionScreen extends ConsumerStatefulWidget {
 }
 
 class _ColeccionScreenState extends ConsumerState<ColeccionScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      AudioManager.playBgm('menu_secondary_theme.mp3');
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final stats = ref.watch(logrosProvider);

@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../widgets/bottom_menu_bar.dart';
 import '../widgets/pantalla_header.dart';
-import '../providers/audio_manager.dart';
 import '../widgets/bgm_scope.dart';
+import '../providers/audio_manager.dart';
 
 class InstruccionesScreen extends StatefulWidget {
   final ContextoJuego juego;
@@ -12,14 +12,6 @@ class InstruccionesScreen extends StatefulWidget {
 }
 
 class _InstruccionesScreenState extends State<InstruccionesScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      AudioManager.playBgm('menu_secondary_theme.mp3');
-    });
-  }
-
   Map<String, dynamic> get _contenido {
     switch (widget.juego) {
       case ContextoJuego.clasificacion:

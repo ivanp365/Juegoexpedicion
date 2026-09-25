@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/logro.dart';
 import '../providers/logros_provider.dart';
 import '../providers/game_provider.dart';
 import '../widgets/pantalla_header.dart';
-import '../providers/audio_manager.dart';
 import '../widgets/bgm_scope.dart';
+import '../providers/audio_manager.dart';
 
 class LogrosScreen extends ConsumerStatefulWidget {
   const LogrosScreen({super.key});
@@ -19,7 +19,6 @@ class _LogrosScreenState extends ConsumerState<LogrosScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      AudioManager.playBgm('menu_secondary_theme.mp3');
       final monedasActuales = ref.read(coinsProvider);
       ref
           .read(logrosProvider.notifier)
