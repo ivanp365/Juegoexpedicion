@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/tesoro_model.dart';
@@ -25,12 +25,8 @@ class _FloatingTitleAnimationState extends State<FloatingTitleAnimation> with Si
   @override
   void initState() {
     super.initState();
-    // Animación cíclica de 3 segundos
     _controller = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat(reverse: true);
-    
-    // Movimiento vertical suave (flote de arriba a abajo)
     _moveAnimation = Tween<double>(begin: -5.0, end: 5.0).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOutSine));
-    // Rotación muy sutil para dar efecto de balanceo orgánico
     _rotateAnimation = Tween<double>(begin: -0.015, end: 0.015).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOutSine));
   }
 
@@ -246,10 +242,8 @@ class TesorosCategoriaScreen extends ConsumerWidget {
     final size = MediaQuery.of(context).size;
     final scale = size.width / 400;
 
-    // CONDICIÓN: Si el texto es mayor a 20 caracteres, es considerado largo.
     final bool isLongText = nombreRecurso.length > 20;
-    // Reduce la fuente si es largo, para que salte de línea sin verse desproporcionado
-    final double textFontSize = isLongText ? 12.0 * scale : 15.0 * scale;
+    final double textFontSize = isLongText ? 11.5 * scale : 15.0 * scale;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -297,20 +291,20 @@ class TesorosCategoriaScreen extends ConsumerWidget {
                           ),
                         ),
 
-                        // TEXTO DINÁMICO Y SUBIDO DE POSICIÓN
+                        // TEXTO DINÁMICO REAJUSTADO - Subido un poco más con bottom: 0.165
                         Positioned(
-                          bottom: marco.maxHeight * 0.125, // <-- Subido un poco para que no toque el borde
-                          left: marco.maxWidth * 0.10,
-                          right: marco.maxWidth * 0.10,
+                          bottom: marco.maxHeight * 0.165, 
+                          left: marco.maxWidth * 0.12, 
+                          right: marco.maxWidth * 0.12,
                           child: Center(
                             child: Text(
                               nombreRecurso,
                               textAlign: TextAlign.center,
-                              maxLines: isLongText ? 2 : 1, // Permite 2 líneas si es largo
+                              maxLines: isLongText ? 2 : 1,
                               style: TextStyle(
                                 color: Colors.white, 
                                 fontSize: textFontSize, 
-                                height: 1.05, // Espaciado entre líneas apretado
+                                height: 1.0, 
                                 fontWeight: FontWeight.w900, 
                                 shadows: const [Shadow(color: Colors.black54, offset: Offset(1.5, 1.5), blurRadius: 2)]
                               ),
@@ -362,32 +356,40 @@ class TesorosCategoriaScreen extends ConsumerWidget {
               ),
             ),
 
-            // 5. BARRA SUPERIOR
+            // 5. BARRA SUPERIOR AISLADA EN UN SAFEAREA
             Positioned(
-              top: MediaQuery.of(context).padding.top + 10,
-              left: 16,
-              right: 16,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Image.asset('assets/images/botonatras.webp', width: 65, height: 65),
+              top: 0,
+              left: 0,
+              right: 0,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          AudioManager.playSfx('button_back.wav');
+                          Navigator.of(context).pop();
+                        },
+                        child: Image.asset('assets/images/botonatras.webp', width: 55, height: 55),
+                      ),
+                      Container(
+                        height: 44,
+                        width: 130,
+                        decoration: const BoxDecoration(
+                          image: DecorationImage(image: AssetImage('assets/images/coin_bg.webp'), fit: BoxFit.contain),
+                        ),
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 32),
+                        child: Text(
+                          '$coins',
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
+                        ),
+                      ),
+                    ],
                   ),
-                  Container(
-                    height: 48,
-                    width: 140,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(image: AssetImage('assets/images/coin_bg.webp'), fit: BoxFit.contain),
-                    ),
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 35),
-                    child: Text(
-                      '$coins',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ],
@@ -396,5 +398,3 @@ class TesorosCategoriaScreen extends ConsumerWidget {
     );
   }
 }
-
-

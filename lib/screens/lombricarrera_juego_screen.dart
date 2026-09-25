@@ -32,6 +32,9 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
 
   int valorDado = 1;
   late PreguntaLombri preguntaActual;
+  List<String> _opcionesMezcladas = [];
+  int _nuevoIndiceCorrecto = 0;
+
   int animDadoDisplay = 1;
   String animCatDisplay = 'assets/images/lombricarrera/lombricultura.webp';
 
@@ -79,6 +82,11 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
     preguntaActual = _preguntasPartida[_indicePregunta];
     _indicePregunta++;
 
+    // MEZCLAR OPCIONES CADA TURNO
+    final String textoCorrectoOriginal = preguntaActual.opciones[preguntaActual.indiceCorrecto];
+    _opcionesMezcladas = List<String>.from(preguntaActual.opciones)..shuffle(_rnd);
+    _nuevoIndiceCorrecto = _opcionesMezcladas.indexOf(textoCorrectoOriginal);
+
     animDadoDisplay = valorDado;
     if (preguntaActual.color == 'verde') animCatDisplay = 'assets/images/lombricarrera/lombricultura.webp';
     else if (preguntaActual.color == 'azul') animCatDisplay = 'assets/images/lombricarrera/cuidado.webp';
@@ -97,10 +105,10 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
       if (!mounted) return;
       bool acierta = _rnd.nextDouble() <= 0.60;
       if (acierta) {
-        _evaluarRespuesta(preguntaActual.indiceCorrecto);
+        _evaluarRespuesta(_nuevoIndiceCorrecto);
       } else {
         int opcIncorrecta;
-        do { opcIncorrecta = _rnd.nextInt(4); } while (opcIncorrecta == preguntaActual.indiceCorrecto);
+        do { opcIncorrecta = _rnd.nextInt(4); } while (opcIncorrecta == _nuevoIndiceCorrecto);
         _evaluarRespuesta(opcIncorrecta);
       }
     }
@@ -110,7 +118,7 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
     if (mostrandoFeedback) return;
     setState(() { indexSeleccionado = index; mostrandoFeedback = true; });
 
-    bool esCorrecto = index == preguntaActual.indiceCorrecto;
+    bool esCorrecto = index == _nuevoIndiceCorrecto;
     final esJugadorHumano = turnoActual == 1 || (turnoActual == 2 && widget.modo != 'vsIA');
 
     if (esCorrecto && esJugadorHumano) {
@@ -280,10 +288,15 @@ class _LombricarreraJuegoScreenState extends ConsumerState<LombricarreraJuegoScr
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10.0),
                       child: _CajaPregunta(
-                        pregunta: preguntaActual, dado: animDadoDisplay, iconoCat: animCatDisplay,
+                        preguntaTexto: preguntaActual.texto, 
+                        opciones: _opcionesMezcladas,
+                        dado: animDadoDisplay, 
+                        iconoCat: animCatDisplay,
                         onRespuesta: _evaluarRespuesta,
                         bloquearToque: (turnoActual == 2 && widget.modo == 'vsIA') || mostrandoFeedback,
-                        mostrarFeedback: mostrandoFeedback, indexSeleccionado: indexSeleccionado,
+                        mostrarFeedback: mostrandoFeedback, 
+                        indexSeleccionado: indexSeleccionado,
+                        indiceCorrectoReal: _nuevoIndiceCorrecto,
                       ).animate().slideY(begin: 0.2, end: 0, curve: Curves.easeOutBack).fadeIn(),
                     ),
                   ),
@@ -427,15 +440,20 @@ class _CasillaGrilla extends StatelessWidget {
 }
 
 class _CajaPregunta extends StatelessWidget {
-  final PreguntaLombri pregunta;
+  final String preguntaTexto;
+  final List<String> opciones;
   final int dado;
   final String iconoCat;
   final Function(int) onRespuesta;
   final bool bloquearToque;
   final bool mostrarFeedback;
   final int? indexSeleccionado;
+  final int indiceCorrectoReal;
 
-  const _CajaPregunta({required this.pregunta, required this.dado, required this.iconoCat, required this.onRespuesta, required this.bloquearToque, required this.mostrarFeedback, required this.indexSeleccionado});
+  const _CajaPregunta({
+    required this.preguntaTexto, required this.opciones, required this.dado, required this.iconoCat, required this.onRespuesta, 
+    required this.bloquearToque, required this.mostrarFeedback, required this.indexSeleccionado, required this.indiceCorrectoReal
+  });
 
   static const double _padLados = 0.078;
   static const double _padArriba = 0.14;
@@ -464,7 +482,7 @@ class _CajaPregunta extends StatelessWidget {
                       Expanded(
                         flex: 4,
                         child: Center(
-                          child: Text(pregunta.texto, textAlign: TextAlign.center, maxLines: 3,overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF3E2712))),
+                          child: Text(preguntaTexto, textAlign: TextAlign.center, maxLines: 3,overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF3E2712))),
                         ),
                       ),
                       Expanded(
@@ -510,7 +528,7 @@ class _CajaPregunta extends StatelessWidget {
 
   Widget _filaOpciones(int a, int b, double alto) {
     const letras = ['a', 'b', 'c', 'd'];
-    Widget boton(int i) => _BotonOpcion(letras[i], pregunta.opciones[i], bloquearToque ? null :() => onRespuesta(i), _obtenerEstado(i), alto);
+    Widget boton(int i) => _BotonOpcion(letras[i], opciones[i], bloquearToque ? null :() => onRespuesta(i), _obtenerEstado(i), alto);
     return Row(
       children: [
         Expanded(child: boton(a)),
@@ -522,7 +540,7 @@ class _CajaPregunta extends StatelessWidget {
 
   String _obtenerEstado(int index) {
     if (!mostrarFeedback) return 'normal';
-    if (index == pregunta.indiceCorrecto) return 'correcto';
+    if (index == indiceCorrectoReal) return 'correcto';
     if (index == indexSeleccionado) return 'incorrecto';
     return 'normal';
   }
